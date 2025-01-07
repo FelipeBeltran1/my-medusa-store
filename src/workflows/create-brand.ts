@@ -1,6 +1,8 @@
 import {
   createStep,
   StepResponse,
+  createWorkflow,
+  WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
 import { BRAND_MODULE } from "../modules/brand"
 import BrandModuleService from "../modules/brand/service"
@@ -26,5 +28,18 @@ export const createBrandStep = createStep(
     )
 
     await brandModuleService.deleteBrands(id)
+  }
+)
+
+type CreateBrandWorkflowInput = {
+  name: string
+}
+
+export const createBrandWorkflow = createWorkflow(
+  "create-brand",
+  (input: CreateBrandWorkflowInput) => {
+    const brand = createBrandStep(input)
+    
+    return new WorkflowResponse(brand)
   }
 )
