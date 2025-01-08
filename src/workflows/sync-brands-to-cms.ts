@@ -34,7 +34,7 @@ const syncBrandToCmsStep = createStep(
   }
 )
 
-export const SyncBrandToCmsWorkflowInput = createWorkflow(
+export const SyncBrandToCmsWorkflow = createWorkflow(
   "sync-brand-to-cms",
   (input: SyncBrandToCmsWorkflowInput) => {
     // @ts-ignore
