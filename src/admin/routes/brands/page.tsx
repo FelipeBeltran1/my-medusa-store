@@ -4,9 +4,35 @@ import { Container, Heading } from "@medusajs/ui"
 import { useQuery } from "@tanstack/react-query"
 import { sdk } from "../../lib/sdk"
 import { useMemo, useState } from "react"
+import { Table } from "../../components/table"
+
+type BrandsResponse = {
+  brands: {
+    id: string,
+    name: string
+  }[]
+  count: number,
+  limit: number,
+  offset: number
+}
 
 const BrandsPage = () => {
-  // TODO retrieve brands
+  const [currentPage, setCurrentPage] = useState(0);
+  const limit = 15;
+  const offset = useMemo(() => {
+    return currentPage * limit;
+  }, [currentPage]);
+
+  const { data } = useQuery<BrandsResponse>({
+    queryFn: () =>
+      sdk.client.fetch(`/admin/brands`, {
+        query: {
+          limit,
+          offset,
+        },
+      }),
+    queryKey: [["brands", limit, offset]],
+  });
 
   return (
     <Container className="divide-y p-0">
@@ -15,10 +41,26 @@ const BrandsPage = () => {
           <Heading level="h2">Brands</Heading>
         </div>
       </div>
-      {/* TODO show brands */}
+      <Table
+        columns={[
+          {
+            key: "id",
+            label: "#",
+          },
+          {
+            key: "name",
+            label: "Name",
+          },
+        ]}
+        data={data?.brands || []}
+        pageSize={data?.limit || limit}
+        count={data?.count || 0}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
     </Container>
-  )
-}
+  );
+};
 
 export const config = defineRouteConfig({
   label: "Brands",
