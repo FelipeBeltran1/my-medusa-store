@@ -11,8 +11,17 @@ type CreateBrand = {
   name: string
 }
 
+type UpdateBrand = {
+  id: string,
+  name: string
+}
+
 type CreateBrandsInput = {
   brands: CreateBrand[]
+}
+
+type UpdateBrandsInput = {
+  brands: UpdateBrand[]
 }
 
 const retrieveBrandsFromCmsStep = createStep(
@@ -47,5 +56,33 @@ export const createBrandsStep = createStep(
     )
 
     await brandModuleService.deleteBrands(brands.map((brand) => brand.id))
+  }
+)
+
+export const updateBrandsStep = createStep(
+  "update-brands-step",
+  async ({ brands }: UpdateBrandsInput, { container }) => {
+    const brandModuleService: BrandModuleService = container.resolve(
+      BRAND_MODULE
+    )
+
+    const prevUpdatedBrands = await brandModuleService.listBrands({
+      id: brands.map((brand) => brand.id),
+    })
+
+    const updatedBrands = await brandModuleService.updateBrands(brands)
+
+    return new StepResponse(updatedBrands, prevUpdatedBrands)
+  },
+  async (prevUpdatedBrands, { container }) => {
+    if (!prevUpdatedBrands) {
+      return
+    }
+
+    const brandModuleService: BrandModuleService = container.resolve(
+      BRAND_MODULE
+    )
+
+    await brandModuleService.updateBrands(prevUpdatedBrands)
   }
 )
