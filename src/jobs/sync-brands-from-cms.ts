@@ -14,5 +14,5 @@ export default async function (container: MedusaContainer) {
 
 export const config = {
   name: "sync-brands-from-system",
-  schedule: "* * * * *", // change to * * * * * for debugging
+  schedule: "0 0 * * *", // change to * * * * * for debugging
 }
