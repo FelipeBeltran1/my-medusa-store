@@ -1,6 +1,9 @@
 import {
   createStep,
   StepResponse,
+  createWorkflow,
+  transform,
+  WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
 import CmsModuleService from "../modules/cms/service"
 import BrandModuleService from "../modules/brand/service"
@@ -84,5 +87,45 @@ export const updateBrandsStep = createStep(
     )
 
     await brandModuleService.updateBrands(prevUpdatedBrands)
+  }
+)
+
+export const syncBrandsFromCmsWorkflow = createWorkflow(
+  "sync-brands-from-system",
+  () => {
+    const brands = retrieveBrandsFromCmsStep()
+
+    const { toCreate, toUpdate } = transform(
+      {
+        brands,
+      },
+      (data) => {
+        const toCreate: CreateBrand[] = []
+        const toUpdate: UpdateBrand[] = []
+    
+        data.brands.forEach((brand) => {
+          if (brand.external_id) {
+            toUpdate.push({
+              id: brand.external_id as string,
+              name: brand.name as string,
+            })
+          } else {
+            toCreate.push({
+              name: brand.name as string,
+            })
+          }
+        })
+    
+        return { toCreate, toUpdate }
+      }
+    )
+    
+    const created = createBrandsStep({ brands: toCreate });
+    const updated = updateBrandsStep({ brands: toUpdate });
+
+    return new WorkflowResponse({
+      created,
+      updated,
+    });
   }
 )
